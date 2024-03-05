@@ -27,12 +27,15 @@ while cap.isOpened():
     # secs = round(cap.get(cv2.CAP_PROP_POS_MSEC) / 1000)
     secs = (cap.get(cv2.CAP_PROP_POS_MSEC) / 1000)
     print("Frame {} @ {}s".format(frame_num, secs))
-    #
-    # x, y, w, h = 80, 460, 250, 50
-    # timestamp_crop = frame[y: y + h, x: x + w]
-    # cv2.imshow('timestamp', timestamp_crop)
-    # if cv2.waitKey(1) & 0xFF == ord('q'):
-    #   break
+    # hard code the area of timestamp
+    # (0,0) is at top left corner,
+    # x-direction: left to right
+    # y-direction: top to bottom
+    x, y, w, h = 30, 1150, 400, 50
+    timestamp_crop = frame[y: y + h, x: x + w]
+    cv2.imshow('timestamp', timestamp_crop)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+      break
     #
     # timestamp_grey = cv2.cvtColor(timestamp_crop, cv2.COLOR_BGR2GRAY)
     # _, timestamp_thresh = cv2.threshold( \
