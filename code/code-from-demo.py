@@ -42,12 +42,11 @@ while cap.isOpened():
     #   timestamp_grey, 127, 255, cv2.THRESH_BINARY)
     # cv2.imshow('thresholded timestamp', timestamp_thresh)
     #
-    # candidate_str = pytesseract.image_to_string(timestamp_thresh,\
-    #     config='--psm 7 outputbase digits')
-    # regex_str = '[123]?\d{1}\.1?\d{1}\.19[89]\d{1}'
-    #
-    # if bool(re.match(regex_str, candidate_str)):
-    #     print("** Timestamp @ {}s = {}".format(secs, candidate_str))
+    candidate_str = pytesseract.image_to_string(timestamp_crop,
+                                                config='--psm 6 -c tessedit_char_whitelist="0123456789/.: "')
+        # config='--psm 7 outputbase digits')
+    print('raw candidate_str:', candidate_str)
+
   else: # no frames left in video
     break
 
