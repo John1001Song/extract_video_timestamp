@@ -1,5 +1,6 @@
 # extract_video_timestamp
-extract timestamps from each video frame and save them in sequence
+extract timestamps from each video frame and save them in sequence  
+use python to run code-from-demo.py
 
 # important reference
 inspired by this post 
