@@ -2,7 +2,7 @@ import cv2
 import pytesseract
 import re
 
-cap = cv2.VideoCapture("../data/stamp_20240303_182801.mp4")
+cap = cv2.VideoCapture("../data/TimeVideo_20240307_113053.mp4")
 fps = round(cap.get(cv2.CAP_PROP_FPS))
 print('fps:', fps)
 frame_num = 0
@@ -31,7 +31,7 @@ while cap.isOpened():
     # (0,0) is at top left corner,
     # x-direction: left to right
     # y-direction: top to bottom
-    x, y, w, h = 30, 1150, 400, 50
+    x, w, y, h = 0, 725, 1130, 100
     timestamp_crop = frame[y: y + h, x: x + w]
     cv2.imshow('timestamp', timestamp_crop)
     if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -43,11 +43,16 @@ while cap.isOpened():
     # cv2.imshow('thresholded timestamp', timestamp_thresh)
     #
     candidate_str = pytesseract.image_to_string(timestamp_crop,
-                                                config='--psm 6 -c tessedit_char_whitelist="0123456789/.: "')
+                                                config='--psm 6 -c tessedit_char_whitelist="NW0123456789/.: "')
         # config='--psm 7 outputbase digits')
-    print('raw candidate_str:', candidate_str)
+    # print('raw candidate_str:', candidate_str)
+    raw_timestamp = candidate_str.split("\n")[0]
+    raw_location = candidate_str.split("\n")[1]
+    print('raw_timestamp:', raw_timestamp)
+    print('raw_location:', raw_location)
 
-  else: # no frames left in video
+    # no frames left in video
+  else:
     break
 
 cap.release()
