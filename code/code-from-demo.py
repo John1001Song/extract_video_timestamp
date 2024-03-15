@@ -1,15 +1,36 @@
 import cv2
 import pytesseract
 import re
+import os
+from tqdm import tqdm
 
-cap = cv2.VideoCapture("../data/TimeVideo_20240307_113053.mp4")
+
+path = "/Users/js/Documents/GitHub/extract_video_timestamp/data/video/"
+save_frame_path = "../results/raw_frames/"
+save_timestamp_path = "../results/raw_timestamps/"
+save_GPS_path = "../results/raw_gps/"
+
+
+
+os.chdir(path)
+
+tp_file = open(save_timestamp_path+"timestamps.txt", 'a+')
+gps_file = open(save_GPS_path+"gps.txt", 'a+')
+
+# video = "TimeVideo_20240307_113053.mp4"
+video = "TimeVideo_20240314_123607.mp4"
+# video = "TimeVideo_20240314_123607_10sec.mp4"
+cap = cv2.VideoCapture(video)
 fps = round(cap.get(cv2.CAP_PROP_FPS))
 print('fps:', fps)
 frame_num = 0
 
-NTH_SECONDS = 1
+progress_bar = iter(tqdm(range(int(cap.get(cv2.CAP_PROP_FRAME_COUNT)))))
 
+NTH_SECONDS = 1
+idx = 0
 while cap.isOpened():
+  next(progress_bar)
   frame_exists, frame = cap.read()
   frame_num += 1
 
@@ -26,14 +47,17 @@ while cap.isOpened():
   if frame_exists:
     # secs = round(cap.get(cv2.CAP_PROP_POS_MSEC) / 1000)
     secs = (cap.get(cv2.CAP_PROP_POS_MSEC) / 1000)
-    print("Frame {} @ {}s".format(frame_num, secs))
+    # print("Frame {} @ {}s".format(frame_num, secs))
     # hard code the area of timestamp
     # (0,0) is at top left corner,
     # x-direction: left to right
     # y-direction: top to bottom
-    x, w, y, h = 0, 725, 1130, 100
+    # x, w, y, h = 0, 725, 1130, 100
+    x, w, y, h = 0, 725, 975, 1000
     timestamp_crop = frame[y: y + h, x: x + w]
-    cv2.imshow('timestamp', timestamp_crop)
+    # cv2.imshow('timestamp', timestamp_crop)
+    # cv2.imshow('original', frame)
+    cv2.imwrite(save_frame_path+'raw'+str(idx)+'.png', frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
       break
     #
@@ -48,12 +72,17 @@ while cap.isOpened():
     # print('raw candidate_str:', candidate_str)
     raw_timestamp = candidate_str.split("\n")[0]
     raw_location = candidate_str.split("\n")[1]
-    print('raw_timestamp:', raw_timestamp)
-    print('raw_location:', raw_location)
-
+    # print('raw_timestamp:', raw_timestamp)
+    # print('raw_location:', raw_location)
+    tp_file.write(raw_timestamp+"\n")
+    gps_file.write(raw_location+"\n")
     # no frames left in video
   else:
     break
+  idx+=1
+
 
 cap.release()
 cv2.destroyAllWindows()
+tp_file.close()
+gps_file.close()
