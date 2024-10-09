@@ -3,7 +3,7 @@ import numpy as np
 import glob
 import os
 
-def calibrate_camera(chessboard_images, chessboard_size, square_size, output_folder):
+def calibrate_camera(chessboard_images, chessboard_size, square_size, corner_img_output, npy_output):
     """
     Calibrate a camera using chessboard images and save the calibration results.
 
@@ -31,8 +31,10 @@ def calibrate_camera(chessboard_images, chessboard_size, square_size, output_fol
     objpoints = []  # 3D points in real world space
     imgpoints = []  # 2D points in image plane
 
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder)
+    if not os.path.exists(corner_img_output):
+        os.makedirs(corner_img_output)
+    if not os.path.exists(npy_output):
+        os.makedirs(npy_output)
 
     for i, fname in enumerate(chessboard_images):
         img = cv2.imread(fname)
@@ -52,7 +54,7 @@ def calibrate_camera(chessboard_images, chessboard_size, square_size, output_fol
             cv2.waitKey(100)
 
             # Save the visualized image to the output folder
-            output_filename = os.path.join(output_folder, f"corners_{i:04d}.jpg")
+            output_filename = os.path.join(corner_img_output, f"corners_{i:04d}.jpg")
             cv2.imwrite(output_filename, img)
 
     # Destroy all windows after processing all images
@@ -66,10 +68,10 @@ def calibrate_camera(chessboard_images, chessboard_size, square_size, output_fol
     ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
 
     if ret:
-        np.save(os.path.join(output_folder, 'camera_matrix.npy'), mtx)
-        np.save(os.path.join(output_folder, 'dist_coeffs.npy'), dist)
-        np.save(os.path.join(output_folder, 'rotation_vectors.npy'), rvecs)
-        np.save(os.path.join(output_folder, 'translation_vectors.npy'), tvecs)
+        np.save(os.path.join(npy_output, 'camera_matrix.npy'), mtx)
+        np.save(os.path.join(npy_output, 'dist_coeffs.npy'), dist)
+        np.save(os.path.join(npy_output, 'rotation_vectors.npy'), rvecs)
+        np.save(os.path.join(npy_output, 'translation_vectors.npy'), tvecs)
 
     return ret, mtx, dist, rvecs, tvecs, objpoints, imgpoints
 
@@ -125,10 +127,10 @@ if __name__ == "__main__":
     chessboard_images = glob.glob('../data/output/calibration_horizontal_frames/*.jpg')
     chessboard_size = (9, 6)  # Number of inner corners per row and column
     square_size = 0.0255  # Size of a square in meters
-    output_folder = '../data/output/calibration_horizontal_res/'
-
+    corner_output_folder = '../data/output/calibration_horizontal_res/'
+    npy_output_folder = "../data/output/calibration_horizontal_npy/"
     # Calibrate the camera and obtain the required points
-    ret, mtx, dist, rvecs, tvecs, objpoints, imgpoints = calibrate_camera(chessboard_images, chessboard_size, square_size, output_folder)
+    ret, mtx, dist, rvecs, tvecs, objpoints, imgpoints = calibrate_camera(chessboard_images, chessboard_size, square_size, corner_output_folder, npy_output_folder)
 
     if ret:
         print("Camera calibration was successful.")
