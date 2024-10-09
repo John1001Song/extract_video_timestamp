@@ -3,40 +3,37 @@ import numpy as np
 import glob
 import os
 
-def calibrate_camera(chessboard_images, chessboard_size, square_size):
+def calibrate_camera(chessboard_images, chessboard_size, square_size, output_folder):
     """
-    Calibrate a camera using chessboard images.
+    Calibrate a camera using chessboard images and save the calibration results.
 
     Args:
     - chessboard_images (list of str): List of file paths to chessboard images.
     - chessboard_size (tuple): Number of inner corners per a chessboard row and column (width, height).
     - square_size (float): The size of a square on your chessboard in real-world units (e.g., meters or millimeters).
+    - output_folder (str): Directory to save calibration visualizations and results.
 
     Returns:
     - ret (bool): Whether calibration was successful.
-    - mtx (ndarray): Camera matrix (internal parameters).
+    - mtx (ndarray): Camera matrix (intrinsic parameters).
     - dist (ndarray): Distortion coefficients.
-    - rvecs (list): Rotation vectors (external parameters for each image).
-    - tvecs (list): Translation vectors (external parameters for each image).
+    - rvecs (list): Rotation vectors (extrinsic parameters for each image).
+    - tvecs (list): Translation vectors (extrinsic parameters for each image).
+    - objpoints (list): 3D points in real world space.
+    - imgpoints (list): 2D points in image plane.
     """
     # Termination criteria for corner subpixel refinement
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-    
-    # Prepare object points based on real-world coordinates
     objp = np.zeros((chessboard_size[0] * chessboard_size[1], 3), np.float32)
     objp[:, :2] = np.mgrid[0:chessboard_size[0], 0:chessboard_size[1]].T.reshape(-1, 2)
     objp *= square_size
-    
-    # Arrays to store object points and image points from all images
+
     objpoints = []  # 3D points in real world space
     imgpoints = []  # 2D points in image plane
 
-    # Create output folder for visualized corners if it does not exist
-    output_folder = '../data/output/corners_in_frames/'
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
-    # Iterate over each chessboard image
     for i, fname in enumerate(chessboard_images):
         img = cv2.imread(fname)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -46,12 +43,11 @@ def calibrate_camera(chessboard_images, chessboard_size, square_size):
 
         if ret:
             objpoints.append(objp)
-            # Refine corner locations to subpixel accuracy
             corners2 = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
             imgpoints.append(corners2)
-            
-            # Visualize the corners
             cv2.drawChessboardCorners(img, chessboard_size, corners2, ret)
+
+            # Show the image with the chessboard corners
             cv2.imshow('Chessboard Corners', img)
             cv2.waitKey(100)
 
@@ -59,32 +55,92 @@ def calibrate_camera(chessboard_images, chessboard_size, square_size):
             output_filename = os.path.join(output_folder, f"corners_{i:04d}.jpg")
             cv2.imwrite(output_filename, img)
 
+    # Destroy all windows after processing all images
     cv2.destroyAllWindows()
+
+    if len(objpoints) == 0:
+        print("No valid chessboard images were found.")
+        return False, None, None, None, None, None, None
 
     # Perform camera calibration to find internal and external parameters
     ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
 
     if ret:
-        # Save calibration results
-        np.save('../data/output/calibration/camera_matrix.npy', mtx)
-        np.save('../data/output/calibration/dist_coeffs.npy', dist)
-        np.save('../data/output/calibration/rotation_vectors.npy', rvecs)
-        np.save('../data/output/calibration/translation_vectors.npy', tvecs)
+        np.save(os.path.join(output_folder, 'camera_matrix.npy'), mtx)
+        np.save(os.path.join(output_folder, 'dist_coeffs.npy'), dist)
+        np.save(os.path.join(output_folder, 'rotation_vectors.npy'), rvecs)
+        np.save(os.path.join(output_folder, 'translation_vectors.npy'), tvecs)
 
-    return ret, mtx, dist, rvecs, tvecs
+    return ret, mtx, dist, rvecs, tvecs, objpoints, imgpoints
 
-# Usage example
-chessboard_images = glob.glob('../data/output/calibration_frames/*.jpg')  # Update with your image path
-chessboard_size = (9, 6)  # Update with the number of inner corners per chessboard row and column
-square_size = 0.0255  # Update with the size of a square on your chessboard in meters
 
-ret, mtx, dist, rvecs, tvecs = calibrate_camera(chessboard_images, chessboard_size, square_size)
+def undistort_image(image_path, mtx, dist):
+    """
+    Undistort an image using the provided camera matrix and distortion coefficients.
 
-if ret:
-    print("Camera calibration was successful.")
-    print("Camera matrix (intrinsic parameters):\n", mtx)
-    print("Distortion coefficients:\n", dist)
-    print("Rotation vectors (extrinsic parameters):\n", rvecs)
-    print("Translation vectors (extrinsic parameters):\n", tvecs)
-else:
-    print("Camera calibration failed.")
+    Args:
+    - image_path (str): Path to the image to undistort.
+    - mtx (ndarray): Camera matrix.
+    - dist (ndarray): Distortion coefficients.
+    """
+    img = cv2.imread(image_path)
+    h, w = img.shape[:2]
+    new_camera_mtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
+    undistorted_img = cv2.undistort(img, mtx, dist, None, new_camera_mtx)
+
+    # Crop the image (optional) based on the region of interest
+    x, y, w, h = roi
+    undistorted_img = undistorted_img[y:y+h, x:x+w]
+
+    cv2.imshow("Undistorted Image", undistorted_img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+
+def compute_reprojection_error(objpoints, imgpoints, rvecs, tvecs, mtx, dist):
+    """
+    Compute the re-projection error for the camera calibration.
+
+    Args:
+    - objpoints (list): 3D points in real world space.
+    - imgpoints (list): 2D points in image plane.
+    - rvecs (list): Rotation vectors from the calibration.
+    - tvecs (list): Translation vectors from the calibration.
+    - mtx (ndarray): Camera matrix (intrinsic parameters).
+    - dist (ndarray): Distortion coefficients.
+
+    Returns:
+    - error (float): Re-projection error.
+    """
+    total_error = 0
+    for i in range(len(objpoints)):
+        imgpoints2, _ = cv2.projectPoints(objpoints[i], rvecs[i], tvecs[i], mtx, dist)
+        error = cv2.norm(imgpoints[i], imgpoints2, cv2.NORM_L2) / len(imgpoints2)
+        total_error += error
+    return total_error / len(objpoints)
+
+
+# Main Usage Example
+if __name__ == "__main__":
+    chessboard_images = glob.glob('../data/output/calibration_horizontal_frames/*.jpg')
+    chessboard_size = (9, 6)  # Number of inner corners per row and column
+    square_size = 0.0255  # Size of a square in meters
+    output_folder = '../data/output/calibration_horizontal_res/'
+
+    # Calibrate the camera and obtain the required points
+    ret, mtx, dist, rvecs, tvecs, objpoints, imgpoints = calibrate_camera(chessboard_images, chessboard_size, square_size, output_folder)
+
+    if ret:
+        print("Camera calibration was successful.")
+        print("Camera matrix (intrinsic parameters):\n", mtx)
+        print("Distortion coefficients:\n", dist)
+
+        # Re-projection error computation
+        error = compute_reprojection_error(objpoints, imgpoints, rvecs, tvecs, mtx, dist)
+        print(f"Re-projection error: {error}")
+
+        # Optionally, undistort an image to verify the calibration
+        # undistort_image('../data/output/calibration_horizontal_frames/example_image.jpg', mtx, dist)
+
+    else:
+        print("Camera calibration failed.")
