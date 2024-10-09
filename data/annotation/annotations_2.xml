@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<annotations>
+  <version>1.1</version>
+  <meta>
+    <job>
+      <id>1201910</id>
+      <size>5</size>
+      <mode>annotation</mode>
+      <overlap>0</overlap>
+      <bugtracker></bugtracker>
+      <created>2024-09-03 05:45:56.928427+00:00</created>
+      <updated>2024-09-03 05:55:57.770601+00:00</updated>
+      <subset>default</subset>
+      <start_frame>0</start_frame>
+      <stop_frame>4</stop_frame>
+      <frame_filter></frame_filter>
+      <segments>
+        <segment>
+          <id>1204151</id>
+          <start>0</start>
+          <stop>4</stop>
+          <url>https://app.cvat.ai/api/jobs/1201910</url>
+        </segment>
+      </segments>
+      <owner>
+        <username>jinyue</username>
+        <email>jysong@ucdavis.edu</email>
+      </owner>
+      <assignee></assignee>
+      <labels>
+        <label>
+          <name>car</name>
+          <color>#2080c0</color>
+          <type>any</type>
+          <attributes>
+          </attributes>
+        </label>
+        <label>
+          <name>metal_board</name>
+          <color>#60d742</color>
+          <type>any</type>
+          <attributes>
+          </attributes>
+        </label>
+      </labels>
+    </job>
+    <dumped>2024-09-03 05:56:16.549676+00:00</dumped>
+  </meta>
+  <image id="0" name="TimeVideo_20240823_134130_frame_0040.jpg" width="1920" height="1080">
+    <cuboid label="car" source="manual" occluded="0" xtl1="1265.13" ytl1="456.00" xbl1="1265.13" ybl1="773.28" xtr1="1768.92" ytr1="455.90" xbr1="1768.92" ybr1="773.28" xtl2="1819.30" ytl2="423.14" xbl2="1819.30" ybl2="740.32" xtr2="1315.80" ytr2="423.24" xbr2="1315.80" ybr2="740.33" z_order="0">
+    </cuboid>
+  </image>
+  <image id="1" name="TimeVideo_20240901_180144_10feet_frame_0000.jpg" width="1920" height="1080">
+    <cuboid label="car" source="manual" occluded="0" xtl1="63.50" ytl1="485.83" xbl1="63.50" ybl1="821.80" xtr1="755.74" ytr1="485.76" xbr1="755.74" ybr1="821.80" xtl2="840.09" ytl2="269.34" xbl2="840.09" ybl2="625.74" xtr2="105.86" ytr2="269.46" xbr2="105.86" ybr2="625.79" z_order="0">
+    </cuboid>
+  </image>
+  <image id="2" name="TimeVideo_20240901_180207_20feet_frame_0010.jpg" width="1920" height="1080">
+    <cuboid label="car" source="manual" occluded="0" xtl1="259.42" ytl1="459.71" xbl1="259.42" ybl1="672.53" xtr1="666.18" ytr1="459.64" xbr1="666.18" ybr1="672.53" xtl2="760.99" ytl2="356.36" xbl2="760.99" ybl2="569.04" xtr2="354.60" ytr2="356.47" xbr2="354.60" ybr2="569.07" z_order="0">
+    </cuboid>
+  </image>
+  <image id="3" name="TimeVideo_20240901_180247_30feet_frame_0000.jpg" width="1920" height="1080">
+    <cuboid label="car" source="manual" occluded="0" xtl1="436.68" ytl1="653.76" xbl1="436.68" ybl1="814.33" xtr1="718.43" ytr1="653.70" xbr1="718.43" ybr1="814.33" xtl2="746.60" ytl2="567.53" xbl2="746.60" ybl2="728.01" xtr2="465.12" ytr2="567.63" xbr2="465.12" ybr2="728.05" z_order="0">
+    </cuboid>
+  </image>
+  <image id="4" name="corners_0000.jpg" width="1920" height="1080">
+    <cuboid label="metal_board" source="manual" occluded="0" xtl1="966.59" ytl1="265.67" xbl1="966.59" ybl1="627.74" xtr1="1136.39" ytr1="265.59" xbr1="1136.39" ybr1="627.74" xtl2="1154.86" ytl2="223.85" xbl2="1154.86" ybl2="585.83" xtr2="985.14" ytr2="223.94" xbr2="985.14" ybr2="585.84" z_order="0">
+    </cuboid>
+  </image>
+</annotations>
