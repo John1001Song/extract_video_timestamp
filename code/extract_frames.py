@@ -49,11 +49,11 @@ def extract_frames(video_path, output_folder, frame_interval=30):
 
 # Usage example
 video_folder = '../data/video_for_calibration/'
-output_folder = '../data/output/calibration_frames/'
+output_folder = '../data/output/calibration_horizontal_frames/'
 frame_interval = 10  # Extract one frame every 10 frames
 
 # Find all MP4 files in the directory
-video_files = glob.glob(os.path.join(video_folder, '*.mp4'))
+video_files = glob.glob(os.path.join(video_folder, 'TimeVideo_20241008_132618.mp4'))
 
 # Extract frames from each video file
 for video_file in video_files:
